@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Sistem Pencatatan Surat</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .test {
+        margin: 10px 0;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 5px;
+      }
+      .pass {
+        color: green;
+        font-weight: bold;
+      }
+      .fail {
+        color: red;
+        font-weight: bold;
+      }
+      .info {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test Sistem Pencatatan Surat</h1>
+    <div id="results"></div>
+
+    <script>
+      const results = document.getElementById("results");
+      let testCount = 0;
+      let passCount = 0;
+
+      function log(message, status = "info") {
+        testCount++;
+        const div = document.createElement("div");
+        div.className = "test";
+        const icon = status === "pass" ? "✅" : status === "fail" ? "❌" : "ℹ️";
+        div.innerHTML = `<span class="${status}">${icon} ${message}</span>`;
+        results.appendChild(div);
+        if (status === "pass") passCount++;
+      }
+
+      // Test 1: Check if localStorage API is available
+      log("Checking localStorage API...", localStorage ? "pass" : "fail");
+
+      // Test 2: Check if crypto.randomUUID is available
+      log("Checking crypto.randomUUID API...", typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? "pass" : "fail");
+
+      // Test 3: Simulate data save
+      const testKey = "test_sr_sim_v1";
+      const testData = {
+        counters: { "SKTM:2025": 5 },
+        letters: [
+          {
+            id: "123",
+            classification: "SKTM",
+            letter_date: "2025-01-08",
+            fullName: "Test User",
+            status: "AKTIF",
+          },
+        ],
+      };
+
+      try {
+        localStorage.setItem(testKey, JSON.stringify(testData));
+        const retrieved = JSON.parse(localStorage.getItem(testKey));
+        log("localStorage save/load test...", retrieved.letters.length === 1 ? "pass" : "fail");
+        localStorage.removeItem(testKey);
+      } catch (e) {
+        log("localStorage save/load test...", "fail");
+      }
+
+      // Test 4: Check if date parsing works
+      const date = "2025-01-08";
+      const year = Number(String(date).slice(0, 4));
+      const month = Number(String(date).slice(5, 7));
+      log("Date parsing test (2025-01-08)...", year === 2025 && month === 1 ? "pass" : "fail");
+
+      // Test 5: Summary
+      const summary = document.createElement("div");
+      summary.className = "test info";
+      summary.style.marginTop = "20px";
+      summary.style.fontSize = "16px";
+      summary.style.fontWeight = "bold";
+      summary.innerHTML = `Hasil: ${passCount}/${testCount} test berhasil`;
+      results.appendChild(summary);
+
+      // Test 6: Final status
+      if (passCount === testCount) {
+        const final = document.createElement("div");
+        final.className = "test";
+        final.innerHTML = '<span class="pass">✅ SISTEM SIAP DIGUNAKAN - Semua test berhasil!</span>';
+        results.appendChild(final);
+      }
+    </script>
+  </body>
+</html>

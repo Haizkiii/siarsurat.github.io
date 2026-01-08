@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sistem Arsip Surat Kelurahan Jayawaras</title>
+    <meta name="theme-color" content="#111827" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="icons/icon-50.png" alt="" class="navbar-logo img-fluid" />
+        <div>
+          <div class="title">Sistem Arsip Surat Kelurahan Jayawaras</div>
+          <div class="subtitle">Nomor urut per Perihal • tersimpan lokal (offline)</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnExportPDF" class="btn secondary">Export PDF</button>
+        <button id="btnExportExcel" class="btn secondary">Export Excel</button>
+        <button id="btnReset" class="btn danger">Reset Data</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <div class="cardHead">
+          <h2>Buat Data Surat Baru</h2>
+          <div class="pill" id="storagePill">Menyimpan lokal</div>
+        </div>
+
+        <form id="letterForm" class="grid">
+          <div class="field">
+            <label>Perihal</label>
+            <select id="classification" required>
+              <option value="SKTM">Surat Keterangan Tidak Mampu</option>
+              <option value="DOMISILI">Surat Keterangan Domisili</option>
+              <option value="SKCK">Surat Keterangan Catatan Kepolisian</option>
+              <option value="KELAHIRAN">Surat Keterangan Kelahiran</option>
+              <option value="KEMATIAN">Surat Keterangan Kematian</option>
+              <option value="DATANGPINDAH">Surat Keterangan Datang/Pindah</option>
+              <option value="SKM">Surat Keterangan Menikah</option>
+              <option value="WARIS">Surat Keterangan Waris</option>
+              <option value="USAHA">Surat Keterangan Usaha</option>
+              <option value="KELUAR">Surat Keluar</option>
+              <option value="LAIN">Surat Keterangan Lainnya</option>
+            </select>
+            <div class="hint">Nomor urut terpisah untuk setiap perihal.</div>
+          </div>
+
+          <div class="field">
+            <label>Tanggal Surat</label>
+            <input id="letterDate" type="date" required />
+            <div class="hint">Tahun diambil dari tanggal surat (reset counter otomatis per tahun).</div>
+          </div>
+
+          <div class="field span2">
+            <label>Nama Lengkap</label>
+            <input id="fullName" type="text" maxlength="120" placeholder="Contoh: Ahmad Santoso" required />
+          </div>
+
+          <div class="field span2">
+            <label>Tempat, Tanggal Lahir</label>
+            <input id="birthPlaceDate" type="text" maxlength="120" placeholder="Contoh: Jakarta, 01-01-1990" required />
+          </div>
+
+          <div class="field span2">
+            <label>Pekerjaan</label>
+            <input id="occupation" type="text" maxlength="120" placeholder="Contoh: Petani / Guru" required />
+          </div>
+
+          <div class="field span2">
+            <label>Alamat</label>
+            <input id="address" type="text" maxlength="120" placeholder="Contoh: Kp. xxx RT.xx RW.xx" />
+          </div>
+
+          <div class="field span2 row">
+            <button class="btn primary" type="submit">Simpan & Buat Nomor</button>
+            <div class="preview">
+              <div class="previewLabel">Preview format:</div>
+              <div class="previewValue" id="previewNo">—</div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="cardHead">
+          <h2>Data Surat</h2>
+          <div class="filters">
+            <select id="filterClass">
+              <option value="SKTM">Surat Keterangan Tidak Mampu</option>
+              <option value="DOMISILI">Surat Keterangan Domisili</option>
+              <option value="SKCK">Surat Keterangan Catatan Kepolisian</option>
+              <option value="KELAHIRAN">Surat Keterangan Kelahiran</option>
+              <option value="KEMATIAN">Surat Keterangan Kematian</option>
+              <option value="DATANGPINDAH">Surat Keterangan Datang/Pindah</option>
+              <option value="SKM">Surat Keterangan Menikah</option>
+              <option value="WARIS">Surat Keterangan Waris</option>
+              <option value="USAHA">Surat Keterangan Usaha</option>
+              <option value="KELUAR">Surat Keluar</option>
+              <option value="LAIN">Surat Keterangan Lainnya</option>
+            </select>
+            <input id="filterYear" type="number" min="2000" max="2100" placeholder="Tahun (mis. 2025)" />
+            <input id="filterNo" type="text" placeholder="Cari nomor surat…" />
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nomor Surat</th>
+                <th>Tanggal</th>
+                <th>Perihal</th>
+                <th>Nama Lengkap</th>
+                <th>Tempat, Tanggal Lahir</th>
+                <th>Pekerjaan</th>
+                <th>Alamat</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="footerRow">
+          <div id="stats" class="muted">—</div>
+          <div class="muted">Tip: Install di Android via Chrome → menu ⋮ → <b>Tambahkan ke layar utama</b>.</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHead">
+          <h2>Nomor Surat Saat Ini</h2>
+          <div class="muted">Berguna untuk cek “nomor terakhir” per perihal per tahun.</div>
+        </div>
+        <div id="counterGrid" class="counterGrid"></div>
+      </section>
+    </main>
+
+    <dialog id="dlg">
+      <div class="dlgHead">
+        <div class="dlgTitle" id="dlgTitle">Konfirmasi</div>
+        <button class="iconBtn" id="dlgClose" aria-label="Tutup">✕</button>
+      </div>
+      <div class="dlgBody" id="dlgBody"></div>
+      <div class="dlgFoot" id="dlgFoot"></div>
+    </dialog>
+
+    <!-- Load external libraries first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+
+    <!-- Then load app script with defer to ensure DOM is ready -->
+    <script src="app.js" defer></script>
+    <script>
+      // Register service worker (PWA offline)
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js");
+        });
+      }
+    </script>
+  </body>
+</html>

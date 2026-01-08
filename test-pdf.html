@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Test PDF Export</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  </head>
+  <body>
+    <h1>Test PDF Export</h1>
+    <button id="testBtn">Click to Test PDF</button>
+    <p id="status">Ready...</p>
+
+    <script>
+      document.getElementById("testBtn").addEventListener("click", () => {
+        try {
+          console.log("Button clicked");
+          console.log("window.jsPDF:", window.jsPDF);
+          console.log("window.jspdf:", window.jspdf);
+
+          if (window.jsPDF) {
+            const { jsPDF } = window;
+            const doc = new jsPDF();
+            doc.text("Test PDF", 10, 10);
+            doc.save("test.pdf");
+            document.getElementById("status").innerText = "Success! PDF should be downloading...";
+          } else if (window.jspdf && window.jspdf.jsPDF) {
+            const doc = new window.jspdf.jsPDF();
+            doc.text("Test PDF", 10, 10);
+            doc.save("test.pdf");
+            document.getElementById("status").innerText = "Success (v2)! PDF should be downloading...";
+          } else {
+            document.getElementById("status").innerText = "Error: jsPDF not found in window object";
+          }
+        } catch (error) {
+          document.getElementById("status").innerText = `Error: ${error.message}`;
+          console.error(error);
+        }
+      });
+
+      // Log when scripts load
+      window.addEventListener("load", () => {
+        console.log("Page loaded");
+        console.log(
+          "Available in window:",
+          Object.keys(window).filter((k) => k.toLowerCase().includes("pdf"))
+        );
+      });
+    </script>
+  </body>
+</html>
